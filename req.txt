@@ -1,0 +1,8 @@
+huggingface
+transformers
+openai
+streamlit
+torch
+langchain
+langchain-openai
+faiss-cpu
