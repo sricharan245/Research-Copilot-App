@@ -39,6 +39,7 @@ openai.api_key = api_key
 client = OpenAI(
   organization='org-4m59LIFJeSjBW5H3Y1nsPlB5',
   project='proj_oSJbtQ2Je7QkjUsnP9RY681d',
+  api_key=api_key
 )
 
 # Load summarization model
