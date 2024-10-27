@@ -19,20 +19,22 @@ from langchain_community.vectorstores import FAISS
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader
 
-
+import dotenv
+dotenv.load_dotenv()
 
 # customization
-api_key = "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"
 MODEL = 'gpt-4o-mini'
 MAX_TOKEN= 300
 TEMPERATURE = 0.2
 
 run_tab1 = True
 
-os.environ['OPENAI_API_KEY'] = api_key
+
+
+api_key = st.secrets["OPENAI_API_KEY"]
 
 # Set OpenAI API Key
-openai.api_key = os.getenv("OPENAI_API_KEY")
+openai.api_key = api_key
 
 client = OpenAI(
   organization='org-4m59LIFJeSjBW5H3Y1nsPlB5',
