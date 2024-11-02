@@ -11,7 +11,6 @@ from openai import OpenAI
 from langchain.memory.buffer import ConversationBufferMemory
 from langchain_community.chat_message_histories import StreamlitChatMessageHistory
 # from langchain.chains import LLMChain
-from langchain.chains import RetrievalQA
 from langchain.chains import ConversationalRetrievalChain
 from langchain.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
@@ -19,27 +18,25 @@ from langchain_community.vectorstores import FAISS
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader
 
-import dotenv
-dotenv.load_dotenv()
+
 
 # customization
+api_key = st.secrets["OPENAI_API_KEY"]
 MODEL = 'gpt-4o-mini'
 MAX_TOKEN= 300
 TEMPERATURE = 0.2
 
 run_tab1 = True
 
-
-
-api_key = st.secrets["OPENAI_API_KEY"]
+os.environ['OPENAI_API_KEY'] = api_key
 
 # Set OpenAI API Key
-openai.api_key = api_key
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 client = OpenAI(
   organization='org-4m59LIFJeSjBW5H3Y1nsPlB5',
   project='proj_oSJbtQ2Je7QkjUsnP9RY681d',
-  api_key=api_key
+  api_key=os.getenv("OPENAI_API_KEY")
 )
 
 # Load summarization model
@@ -87,13 +84,6 @@ def summarize_sections(sections):
         else:
             summary[section] = content
     return summary
-
-# def summarize(text):
-#     summary = {}
-#     summary_text = summarizer(text, max_length=150, min_length=50, do_sample=False)[0]['summary_text']
-#     print(summarizer(text, max_length=150, min_length=50, do_sample=False))
-           
-#     return summary_text
 
 # Function to extract terminology and definitions
 def get_terminology_definitions(text):
@@ -205,7 +195,6 @@ def save_db(doc, embeddings):
 
     # Iterate over batches
     for batch_num in range(num_batches):
-        print("Started")
         # Calculate start and end indices for the current batch
         start_index = batch_num * batch_size
         end_index = (batch_num + 1) * batch_size
@@ -215,7 +204,6 @@ def save_db(doc, embeddings):
         retv.add_documents(batch_documents)
         print("start and end: ", start_index, end_index)
     db.save_local("faiss_index")
-    print("finished")
 
 # Streamlit app layout
 st.header(":blue[Research Copilot]", divider = True)
@@ -251,7 +239,6 @@ if pdf_file is not None:
                 sections = identify_sections(full_text)
 
             with st.spinner("Summarizing sections..."):
-                print(sections)
                 summaries = summarize_sections(sections)
                 # summaries = summarize(full_text)
             
@@ -329,9 +316,8 @@ if pdf_file is not None:
         # llm_chain = LLMChain(llm=llm, prompt = prompt, memory = memory)
         
 
-        llm_chain = RetrievalQA.from_chain_type(llm=llm, retriever = retv,  chain_type='stuff',
-                                                
-                                                return_source_documents=False)
+        # llm_chain = RetrievalQA.from_chain_type(llm=llm, retriever = retv,  chain_type='stuff',
+        #                                         return_source_documents=False)
 
         # llm_chain = ConversationalRetrievalChain.from_llm(
         #     llm, 
@@ -347,7 +333,9 @@ if pdf_file is not None:
         #         },
         #     )
 
-        print(history.messages)
+        qa = ConversationalRetrievalChain.from_llm(llm, retriever = retv, memory= memory, return_source_documents = False)
+
+        # print(history.messages)
         for msg in history.messages:
             print(msg.type)
             st.chat_message(msg.type).write(msg.content)
@@ -358,9 +346,9 @@ if pdf_file is not None:
             st.chat_message('human').write(x)
             with st.spinner("Generating answer..."):
                 
-                # answer = llm_chain({"question": x})
-                answer = llm_chain.invoke(x)
-                st.chat_message("ai").write(answer['result'])
+                answer = qa.invoke({"question": x})
+                # answer = llm_chain.run(x)
+                st.chat_message("ai").write(answer['answer'])
 
        
 
