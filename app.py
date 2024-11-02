@@ -1,6 +1,5 @@
 import os 
 from pypdf import PdfReader
-import streamlit as st
 
 from transformers import pipeline
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
@@ -17,6 +16,13 @@ from langchain_openai import ChatOpenAI
 from langchain_community.vectorstores import FAISS
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader
+
+import streamlit as st
+st.set_page_config(
+    page_title="Research Copilot",
+    page_icon="🤖",
+    layout="wide",
+)
 
 
 
@@ -206,8 +212,10 @@ def save_db(doc, embeddings):
     db.save_local("faiss_index")
 
 # Streamlit app layout
+
 st.header(":blue[Research Copilot]", divider = True)
 st.write(":violet[Understand your research paper within 5 minutes!]")
+
 
 
 pdf_file = st.file_uploader("Upload PDF", type=["pdf"])
@@ -282,21 +290,6 @@ if pdf_file is not None:
             Human: {question}
             AI: """
 
-        # template = """
-        #             Use the following context (delimited by <ctx></ctx>) and the chat history (delimited by <hs></hs>) to answer the question:
-        #             ------
-        #             <ctx>
-        #             {context}
-        #             </ctx>
-        #             ------
-        #             <hs>
-        #             {history}
-        #             </hs>
-        #             ------
-        #             Human: {question}
-        #             AI:
-        #             """
-
         prompt = PromptTemplate(input_variables=['question'], template=template)
 
         
@@ -312,26 +305,6 @@ if pdf_file is not None:
         human_message_prompt = HumanMessagePromptTemplate.from_template(
             "{question}"
         )
-
-        # llm_chain = LLMChain(llm=llm, prompt = prompt, memory = memory)
-        
-
-        # llm_chain = RetrievalQA.from_chain_type(llm=llm, retriever = retv,  chain_type='stuff',
-        #                                         return_source_documents=False)
-
-        # llm_chain = ConversationalRetrievalChain.from_llm(
-        #     llm, 
-        #     retv, # see below for vectorstore definition
-        #     memory=memory,
-        #     condense_question_prompt=prompt,
-        #     # combine_docs_chain_kwargs=dict(prompt=combine_docs_custom_prompt)
-        #     combine_docs_chain_kwargs={
-        #             "prompt": ChatPromptTemplate.from_messages([
-        #                 system_message_prompt,
-        #                 human_message_prompt,
-        #             ]),
-        #         },
-        #     )
 
         qa = ConversationalRetrievalChain.from_llm(llm, retriever = retv, memory= memory, return_source_documents = False)
 
@@ -358,3 +331,27 @@ if pdf_file is not None:
             st.session_state.conversation = None
             st.session_state.chat_history_track = None    
             memory.clear()
+
+# st.markdown(":violet[Made at Hackathon @ HackUNT | University of North Texas]", unsafe_allow_html=True)
+
+
+
+
+footer_html = """
+    <style>
+        .footer {
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            background-color: lightblue;
+            color: black;
+            text-align: center;
+        }
+    </style>
+
+    <div class="footer">
+    <p>Made at Hackathon @ HackUNT | University of North Texas | All rights reserved</p>
+    </div>
+"""
+st.markdown(footer_html, unsafe_allow_html=True)
