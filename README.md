@@ -35,8 +35,8 @@ Clone the repository:
 1. Clone the repository:
 
 ```
-git clone https://github.com/your-username/conversational-research-paper-assistant.git
-cd conversational-research-paper-assistant
+git clone https://github.com/sricharan245/Research-Copilot-App.git
+cd Research-Copilot-App
 ```
 
 2. Install dependencies:
